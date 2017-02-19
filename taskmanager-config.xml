@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services>
+	<thread min="10" max="15" />
+	<ftp host="" port="" user="" password="" path="" original="" />
+	<web_server protocol="http" ip="172.31.4.5" port="80" />
+	<resource>
+		<commitue type="rebbitmq" host="172.31.4.5" port="5672"
+			user="xinwei" password="123456" />
+		<cache type="redis" host="172.31.4.5" port="6379" password="" />
+		<mongo host="172.31.4.5" port="27017" db="xwcloudtest" user="xinwei"
+			passwd="123456" />
+	</resource>
+</services>

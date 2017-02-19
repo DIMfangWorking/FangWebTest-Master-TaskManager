@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:repository="http://www.springframework.org/schema/data/repository"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+	http://www.springframework.org/schema/data/repository 
+	http://www.springframework.org/schema/data/repository/spring-repository.xsd
+	http://www.springframework.org/schema/data/mongo 
+	http://www.springframework.org/schema/data/mongo/spring-mongo.xsd"
+	default-lazy-init="false">
+	<!-- enable component scanning (beware that this does not enable mapper 
+		scanning!) -->
+	<context:component-scan base-package="com.xinwei" />
+	<context:annotation-config />
+	<!-- 日志加载 -->
+	<bean name="AutowiredLoggerPostProcessor" class="com.xinwei.logger.AutowiredLoggerPostProcessor" />
+
+	<!-- Spring平台配置 -->
+	<!-- 定时去申请资源给未申请到资源的任务 -->
+	
+	<bean id="ConfigScheduledExecutorTaskForReal"
+		class="org.springframework.scheduling.concurrent.ScheduledExecutorTask">
+		<property name="delay" value="0" />
+		<property name="period" value="25000" />
+		<property name="runnable">
+			<bean class="org.springframework.scheduling.support.MethodInvokingRunnable">
+				<property name="targetObject" ref="Dispatch" />
+				<property name="targetMethod" value="innerCommunicateForReal" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="ConfigScheduledExecutorTaskForSim"
+		class="org.springframework.scheduling.concurrent.ScheduledExecutorTask">
+		<property name="delay" value="0" />
+		<property name="period" value="25000" />
+		<property name="runnable">
+			<bean class="org.springframework.scheduling.support.MethodInvokingRunnable">
+				<property name="targetObject" ref="Dispatch" />
+				<property name="targetMethod" value="innerCommunicateForSim" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="ConfigScheduledExecutorFactoryBeanForReal"
+		class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">
+		<property name="scheduledExecutorTasks">
+			<list>
+				<ref bean="ConfigScheduledExecutorTaskForReal" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="ConfigScheduledExecutorFactoryBeanForSim"
+		class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">
+		<property name="scheduledExecutorTasks">
+			<list>
+				<ref bean="ConfigScheduledExecutorTaskForSim" />
+			</list>
+		</property>
+	</bean>
+
+	<!--配置线程池 -->
+	<bean id="ThreadPool"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="#{ConfigParser.config.thread.min}" />
+		<property name="maxPoolSize" value="#{ConfigParser.config.thread.max}" />
+		<property name="queueCapacity" value="100" />
+		<property name="keepAliveSeconds" value="300" />
+		<property name="rejectedExecutionHandler">
+			<bean class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy" />
+		</property>
+	</bean>
+
+
+	<!-- 消息队列配置 -->
+	<bean id="RabbitConnectFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host"
+			value="#{ConfigParser.config.resource.commitue.host}" />
+		<property name="port"
+			value="#{ConfigParser.config.resource.commitue.port}" />
+		<property name="username"
+			value="#{ConfigParser.config.resource.commitue.user}" />
+		<property name="password"
+			value="#{ConfigParser.config.resource.commitue.password}" />
+		<property name="automaticRecoveryEnabled" value="true" />
+		<property name="virtualHost" value="/" />
+	</bean>
+
+	<bean id="RabbitConnect" factory-bean="RabbitConnectFactory"
+		factory-method="newConnection" />
+
+	<bean id="RabbitChannel" factory-bean="RabbitConnect"
+		factory-method="createChannel" />
+
+	<!-- 数据源配置 -->
+	<mongo:mongo host="#{ConfigParser.config.resource.mongo.host}"
+		port="#{ConfigParser.config.resource.mongo.port}" />
+
+	<mongo:db-factory dbname="#{ConfigParser.config.resource.mongo.db}"
+		mongo-ref="mongo" username="#{ConfigParser.config.resource.mongo.user}"
+		password="#{ConfigParser.config.resource.mongo.passwd}" />
+
+	<bean id="mappingContext"
+		class="org.springframework.data.mongodb.core.mapping.MongoMappingContext" />
+
+	<bean id="defaultMongoTypeMapper"
+		class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+		<constructor-arg name="typeKey">
+			<null />
+		</constructor-arg>
+	</bean>
+
+	<bean id="mappingMongoConverter"
+		class="org.springframework.data.mongodb.core.convert.MappingMongoConverter">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mappingContext" ref="mappingContext" />
+		<property name="typeMapper" ref="defaultMongoTypeMapper" />
+	</bean>
+
+	<bean id="MongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mongoConverter" ref="mappingMongoConverter" />
+	</bean>
+
+	<!-- 缓存配置 -->
+	<bean id="JedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!--property name="maxActive" value="20" / -->
+		<property name="maxIdle" value="20" />
+		<!--property name="maxWait" value="20" / -->
+		<property name="testOnBorrow" value="true" />
+	</bean>
+
+	<bean id="Jedis0ConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="usePool" value="true" />
+		<property name="hostName" value="#{ConfigParser.config.resource.cache.host}" />
+		<property name="port" value="#{ConfigParser.config.resource.cache.port}" />
+		<!--property name="password" value="true"/ -->
+		<property name="timeout" value="2000" />
+		<property name="database" value="0" />
+		<constructor-arg index="0" ref="JedisPoolConfig" />
+	</bean>
+
+	<bean id="Jedis2ConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="usePool" value="true" />
+		<property name="hostName" value="#{ConfigParser.config.resource.cache.host}" />
+		<property name="port" value="#{ConfigParser.config.resource.cache.port}" />
+		<!--property name="password" value="true"/ -->
+		<property name="timeout" value="2000" />
+		<property name="database" value="2" />
+		<constructor-arg index="0" ref="JedisPoolConfig" />
+	</bean>
+
+	<bean id="Redis0Template" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="Jedis0ConnectionFactory" />
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+	</bean>
+
+	<bean id="Redis2Template" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="Jedis2ConnectionFactory" />
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+	</bean>
+
+	<!-- 平台配置 -->
+	<import resource="classpath:resource/context/platform.xml" />
+	<!-- Action配置 -->
+	<import resource="classpath:resource/context/action.xml" />
+	<!-- services配置 -->
+	<import resource="classpath:resource/context/services.xml" />
+	<!-- dao配置 -->
+	<import resource="classpath:resource/context/dao.xml" />
+	<!-- util配置 -->
+	<import resource="classpath:resource/context/util.xml" />
+	<!-- test配置 -->
+	<import resource="classpath:resource/context/test.xml" />
+</beans>

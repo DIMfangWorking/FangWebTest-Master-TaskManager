@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<InitConfig>
+  <TaskDriver>0</TaskDriver>
+  <CurEnvironment>0</CurEnvironment>
+  <Compile svn_user="guowei" svn_password="123456"/>
+  <TestTask>
+    <TestCaseGroup name="Real_CI">
+      <EnbId>6</EnbId>
+      <TestCase name="Real_CI" times="1"/>
+    </TestCaseGroup>
+  </TestTask>
+</InitConfig>

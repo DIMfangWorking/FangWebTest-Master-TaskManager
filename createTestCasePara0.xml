@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TestCase name="Real_CI" tcg_name="Real_CI">
+  <SupportEnvironment>0</SupportEnvironment>
+  <AtomAction name="LoadedVersion">
+    <Property name="Delay" value="5"/>
+    <Property name="VersionName" value="McLTE.3.2.6.1T1720.BIN"/>
+  </AtomAction>
+  <AtomAction name="CheckVersion">
+    <Property name="Delay" value="300"/>
+    <Property name="VersionName" value="McLTE.3.2.6.1T1720.BIN"/>
+    <Property name="ExpectResult" value="0"/>
+  </AtomAction>
+  <AtomAction name="ReConfigEnb">
+    <Property name="Delay" value="5"/>
+  </AtomAction>
+  <AtomAction name="CheckCellStatus">
+    <Property name="Delay" value="400"/>
+    <Property name="EnbID" value="6"/>
+    <Property name="CellID" value="254"/>
+    <Property name="ExpectResult" value="0"/>
+  </AtomAction>
+  <AtomAction name="AddUE">
+    <Property name="Delay" value="50"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="CellID" value="254"/>
+    <Property name="EnbType" value="0"/>
+    <Property name="UENum" value="1"/>
+  </AtomAction>
+  <AtomAction name="CheckUECnntState">
+    <Property name="Delay" value="5"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="ExpectResult" value="0"/>
+  </AtomAction>
+  <AtomAction name="ULUDP">
+    <Property name="Delay" value="15"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="PDNIP" value="192.168.1.207"/>
+    <Property name="PacketLen" value="60"/>
+    <Property name="BandWitdth" value="30"/>
+    <Property name="Duration" value="200"/>
+    <Property name="LchNum" value="3"/>
+  </AtomAction>
+  <AtomAction name="CheckFlowResult">
+    <Property name="Delay" value="205"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="PSRP" value="0"/>
+    <Property name="ULThrput" value="0"/>
+    <Property name="DLThrput" value="0"/>
+  </AtomAction>
+  <AtomAction name="DLUDP">
+    <Property name="Delay" value="100"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="PDNIP" value="192.168.1.207"/>
+    <Property name="PacketLen" value="1024"/>
+    <Property name="BandWitdth" value="50"/>
+    <Property name="Duration" value="200"/>
+    <Property name="LchNum" value="3"/>
+  </AtomAction>
+  <AtomAction name="CheckFlowResult">
+    <Property name="Delay" value="205"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="PSRP" value="0"/>
+    <Property name="ULThrput" value="0"/>
+    <Property name="DLThrput" value="0"/>
+  </AtomAction>
+  <AtomAction name="DelUEGroup">
+    <Property name="Delay" value="5"/>
+    <Property name="UEGroupID" value="0"/>
+    <Property name="UENum" value="1"/>
+  </AtomAction>
+</TestCase>

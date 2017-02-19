@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="2" passed="2">
+  <reporter-output>
+  </reporter-output>
+  <suite name="TestCI suite" duration-ms="25" started-at="2016-10-19T01:30:00Z" finished-at="2016-10-19T01:30:00Z">
+    <groups>
+    </groups>
+    <test name="TestCI test" duration-ms="25" started-at="2016-10-19T01:30:00Z" finished-at="2016-10-19T01:30:00Z">
+      <class name="com.xinwei.taskmanager.test.TestCI">
+        <test-method status="PASS" signature="beforeTestCI()[pri:0, instance:com.xinwei.taskmanager.test.TestCI@e2cbe0]" name="beforeTestCI" is-config="true" duration-ms="7" started-at="2016-10-19T09:30:00Z" finished-at="2016-10-19T09:30:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeTestCI -->
+        <test-method status="PASS" signature="TestCI()[pri:0, instance:com.xinwei.taskmanager.test.TestCI@e2cbe0]" name="TestCI" duration-ms="6" started-at="2016-10-19T09:30:00Z" finished-at="2016-10-19T09:30:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- TestCI -->
+        <test-method status="PASS" signature="TestCI2()[pri:0, instance:com.xinwei.taskmanager.test.TestCI@e2cbe0]" name="TestCI2" duration-ms="4" started-at="2016-10-19T09:30:00Z" finished-at="2016-10-19T09:30:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- TestCI2 -->
+        <test-method status="PASS" signature="afterTestCI()[pri:0, instance:com.xinwei.taskmanager.test.TestCI@e2cbe0]" name="afterTestCI" is-config="true" duration-ms="0" started-at="2016-10-19T09:30:00Z" finished-at="2016-10-19T09:30:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- afterTestCI -->
+      </class> <!-- com.xinwei.taskmanager.test.TestCI -->
+    </test> <!-- TestCI test -->
+  </suite> <!-- TestCI suite -->
+</testng-results>

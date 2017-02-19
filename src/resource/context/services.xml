@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd"
+	default-lazy-init="false">
+
+	<bean id="TaskRecordService"
+		class="com.xinwei.taskmanager.services.basic.impl.TaskRecordServiceImpl">
+		<property name="taskRecordDao" ref="TaskRecordDao"></property>
+	</bean>
+	<bean id="CIConfigService"
+		class="com.xinwei.taskmanager.services.basic.impl.CIConfigServiceImpl">
+		<property name="cIConfigDao" ref="CIConfigDao"></property>
+	</bean>
+	<bean id="CaseManagerService"
+		class="com.xinwei.taskmanager.services.basic.impl.CaseManagerServiceImpl">
+		<property name="testCaseDao" ref="TestCaseDao"></property>
+		<property name="testGroupDao" ref="TestGroupDao"></property>
+		<property name="cIConfigDao" ref="CIConfigDao"></property>
+		<property name="eIDetailedDao" ref="EIDetailedDao"></property>
+	</bean>
+	<bean id="ResourceService"
+		class="com.xinwei.taskmanager.services.basic.impl.ResourceServiceImpl">
+		<property name="innerCommunicate" ref="RabbitSyncCallDao" />
+	</bean>
+	<bean id="CacheService"
+		class="com.xinwei.taskmanager.services.basic.impl.CacheServiceImpl">
+		<property name="cacheDao" ref="CacheDao"></property>
+	</bean>
+
+	<!-- Atom Operation -->
+	<bean id="LoadVersionOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.LoadVersionOperationServiceImpl">
+	</bean>
+	<bean id="EIDetailOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.EIDetailOperationServiceImpl">
+		<property name="caseManagerService" ref="CaseManagerService"></property>
+	</bean>
+	<bean id="EnbIDOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.EnbIDOperationServiceImpl">
+	</bean>
+	<bean id="PDNIPOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.PDNIPOperationServiceImpl">
+	</bean>
+	<bean id="VersionNameOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.VersionNameOperationServiceImpl">
+	</bean>
+	<bean id="OptionOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.OptionOperationServiceImpl">
+	</bean>
+	<bean id="DefaultOperationService"
+		class="com.xinwei.taskmanager.services.util.impl.DefaultOperationServiceImpl">
+	</bean>
+
+	<!-- Facade services -->
+	<bean id="AbstractFacadeTaskServicerImpl"
+		class="com.xinwei.taskmanager.services.facade.impl.AbstractFacadeTaskServicerImpl"
+		abstract="true">
+		<property name="innerCommunicate" ref="RabbitSyncCallDao" />
+		<property name="taskRecordService" ref="TaskRecordService" />
+		<property name="resourceService" ref="ResourceService" />
+		<property name="taskExecutor" ref="ThreadPool" />
+		<property name="caseManagerService" ref="CaseManagerService" />
+		<property name="cacheService" ref="CacheService" />
+		<property name="taskReportMap" ref="TaskReportMap" />
+		<property name="timerTaskMap" ref="timerTaskMap" />
+		<property name="atomOperationMap">
+			<map>
+				<entry key="LoadedVersion" value-ref="LoadVersionOperationService" />
+				<entry key="EIDetail" value-ref="EIDetailOperationService" />
+				<entry key="EnbID" value-ref="EnbIDOperationService" />
+				<entry key="PDNIP" value-ref="PDNIPOperationService" />
+				<entry key="VersionName" value-ref="VersionNameOperationService" />
+				<entry key="Option" value-ref="OptionOperationService" />
+				<entry key="Default" value-ref="DefaultOperationService" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="CreateTaskParent"
+		class="com.xinwei.taskmanager.services.facade.impl.parent.CreateTaskParent"
+		parent="AbstractFacadeTaskServicerImpl">
+	</bean>
+
+	<bean id="TaskResultParent"
+		class="com.xinwei.taskmanager.services.facade.impl.parent.TaskResultParent"
+		parent="AbstractFacadeTaskServicerImpl">
+	</bean>
+
+	<bean id="TaskReportParent"
+		class="com.xinwei.taskmanager.services.facade.impl.parent.TaskResultParent"
+		parent="AbstractFacadeTaskServicerImpl">
+		<property name="taskRecordService" ref="TaskRecordService" />
+	</bean>
+
+	<bean id="RerunTaskParent"
+		class="com.xinwei.taskmanager.services.facade.impl.parent.RerunTaskParent"
+		parent="AbstractFacadeTaskServicerImpl">
+	</bean>
+
+	<bean id="FacadeCreateTaskService"
+		class="com.xinwei.taskmanager.services.facade.impl.concrete.CreateTaskServiceImpl"
+		parent="CreateTaskParent">
+	</bean>
+
+	<bean id="FacadeCreateAutoTaskService"
+		class="com.xinwei.taskmanager.services.facade.impl.concrete.CreateAutoTaskServiceImpl"
+		parent="CreateTaskParent">
+	</bean>
+
+	<bean id="FacadeRerunTaskService"
+		class="com.xinwei.taskmanager.services.facade.impl.concrete.RerunAutoTaskServiceImpl"
+		parent="RerunTaskParent">
+	</bean>
+
+	<bean id="FacadeTaskResultService"
+		class="com.xinwei.taskmanager.services.facade.impl.concrete.TaskResultServiceImpl"
+		parent="TaskResultParent">
+	</bean>
+
+	<bean id="FacadeTaskReportService"
+		class="com.xinwei.taskmanager.services.facade.impl.concrete.TaskReportServiceImpl"
+		parent="TaskReportParent">
+	</bean>
+</beans>
